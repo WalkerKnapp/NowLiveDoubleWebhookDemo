@@ -162,10 +162,11 @@ public class TwitchInteraction extends NanoHTTPD {
                 System.err.println("Unknown hub.mode: " + hubMode);
             }
         } else if(method == Method.POST){
-            try(InputStream is = session.getInputStream();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()){
-                IOUtils.copy(is, baos);
-                JsonArray payloadData = Json.parse(new String(baos.toByteArray())).asObject().get("data").asArray();
+            try{
+                Map<String, String> files = new HashMap<>();
+                session.parseBody(files);
+                System.out.println("Post body: " + session.getQueryParameterString());
+                JsonArray payloadData = Json.parse(session.getQueryParameterString()).asObject().get("data").asArray();
                 if(payloadData.size() > 0){
                     long userId = Long.parseLong(payloadData.get(0).asObject().get("user_id").asString());
                     long gameId = Long.parseLong(payloadData.get(0).asObject().get("game_id").asString());
@@ -174,7 +175,7 @@ public class TwitchInteraction extends NanoHTTPD {
                 } else {
                     //TODO: Deletions when the stream is ended.
                 }
-            } catch (IOException | Demo.NLException | SQLException e) {
+            } catch (IOException | Demo.NLException | SQLException | ResponseException e) {
                 e.printStackTrace();
             }
         } else {

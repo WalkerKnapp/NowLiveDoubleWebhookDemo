@@ -7,8 +7,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.Javacord;
-import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.core.entity.message.embed.EmbedBuilderDelegateImpl;
 
