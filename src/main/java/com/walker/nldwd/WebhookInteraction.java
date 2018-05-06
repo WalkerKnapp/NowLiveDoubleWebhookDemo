@@ -27,28 +27,33 @@ public class WebhookInteraction {
     }
 
     public void notifyStream(String name, long id, String game, String streamTitle) throws Demo.NLException, SQLException, IOException {
-        for(Long serverId : database.getServersTrackingStream(id)){
-            String embedText = ((EmbedBuilderDelegateImpl)new EmbedBuilder()
-                    .setColor(new java.awt.Color(100, 65, 164))
-                    .setTitle(name + " is now live on Twitch!")
-                    .addField("Now Playing", game, true)
-                    .addField("Stream Title", streamTitle)
-                    .setTimestamp().getDelegate()).toJsonNode().toString();
+        try {
+            for (Long serverId : database.getServersTrackingStream(id)) {
+                String embedText = ((EmbedBuilderDelegateImpl) new EmbedBuilder()
+                        .setColor(new java.awt.Color(100, 65, 164))
+                        .setTitle(name + " is now live on Twitch!")
+                        .addField("Now Playing", game, true)
+                        .addField("Stream Title", streamTitle)
+                        .setTimestamp().getDelegate()).toJsonNode().toString();
 
-            JsonObject data = Json.object()
-                    .set("username", "NLDoubleWebhookDemo")
-                    .set("embeds", Json.array().add(Json.parse(embedText).asObject()));
+                JsonObject data = Json.object()
+                        .set("username", "NLDoubleWebhookDemo")
+                        .set("embeds", Json.array().add(Json.parse(embedText).asObject()));
 
-            long websocketId = database.getWebsocket(serverId);
+                long websocketId = database.getWebsocket(serverId);
 
-            Request webhookPost = new Request.Builder()
-                    .url(WEBSOCKET_POST_URL + websocketId + "/" + discordApi.getWebhookById(websocketId)
-                            .join()
-                            .getToken()
-                            .orElseThrow(() -> new Demo.NLException("Not enough permissions to announce in channel.")))
-                    .post(RequestBody.create(MediaType.parse("application/json"), data.toString())).build();
+                Request webhookPost = new Request.Builder()
+                        .url(WEBSOCKET_POST_URL + websocketId + "/" + discordApi.getWebhookById(websocketId)
+                                .join()
+                                .getToken()
+                                .orElseThrow(() -> new Demo.NLException("Not enough permissions to announce in channel.")))
+                        .post(RequestBody.create(MediaType.parse("application/json"), data.toString())).build();
 
-            client.newCall(webhookPost).execute();
+                client.newCall(webhookPost).execute();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            throw e;
         }
     }
 }

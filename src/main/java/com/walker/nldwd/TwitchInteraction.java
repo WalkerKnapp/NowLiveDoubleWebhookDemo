@@ -22,7 +22,7 @@ public class TwitchInteraction extends NanoHTTPD {
     private static final String SUBSCRIBE_URL = "https://api.twitch.tv/helix/webhooks/hub";
     private static final String LOOKUP_USER_URL = "https://api.twitch.tv/helix/users?login=";
     private static final String LOOKUP_ID_URL = "https://api.twitch.tv/helix/users?id=";
-    private static final String LOOKUP_GAME_ID_URL = "https://api.twitch.tv/helix/gam3es?id=";
+    private static final String LOOKUP_GAME_ID_URL = "https://api.twitch.tv/helix/games?id=";
 
     private final String token;
     private final String twitchSecret;
@@ -50,10 +50,10 @@ public class TwitchInteraction extends NanoHTTPD {
         long userID = queryUserId(channelName);
 
         if(database.isTrackingStream(userID)){
-            database.createNewStreamTrack(userID, serverId);
+            database.addStreamTrack(userID, serverId);
             return CompletableFuture.completedFuture(null);
         } else {
-            database.addStreamTrack(userID, serverId);
+            database.createNewStreamTrack(userID, serverId);
             Request request = createSubscribeRequest(userID);
             System.out.println("Request: " + request.toString());
             this.client.newCall(request).execute();
@@ -165,8 +165,8 @@ public class TwitchInteraction extends NanoHTTPD {
             try{
                 Map<String, String> files = new HashMap<>();
                 session.parseBody(files);
-                System.out.println("Post body: " + session.getQueryParameterString());
-                JsonArray payloadData = Json.parse(session.getQueryParameterString()).asObject().get("data").asArray();
+                System.out.println("POST body: " + files.get("postData"));
+                JsonArray payloadData = Json.parse(files.get("postData")).asObject().get("data").asArray();
                 if(payloadData.size() > 0){
                     long userId = Long.parseLong(payloadData.get(0).asObject().get("user_id").asString());
                     long gameId = Long.parseLong(payloadData.get(0).asObject().get("game_id").asString());

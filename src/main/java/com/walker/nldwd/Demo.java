@@ -12,6 +12,7 @@ import org.javacord.api.util.logging.ExceptionLogger;
 import java.awt.*;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Demo {
 
@@ -32,6 +33,13 @@ public class Demo {
         final DiscordApi api = new DiscordApiBuilder().setToken(args[0]).login().join();
         final WebhookInteraction webhookInteraction = new WebhookInteraction(database, okHttpClient, api);
         final TwitchInteraction twitch = new TwitchInteraction(args[1], args[2], args[3], Integer.parseInt(args[4]), database, okHttpClient, webhookInteraction);
+
+        AtomicLong atomicLong = new AtomicLong();
+        api.getServerTextChannelById(442805495418585088L).orElseThrow(() -> new NullPointerException("Uhhh")).getWebhooks().join().forEach(webhook -> {
+            System.out.println(webhook.getId());
+            atomicLong.set(webhook.getId());
+        });
+        api.getWebhookById(atomicLong.get()).join();
 
         api.addMessageCreateListener(event -> {
             String[] tree = event.getMessage().getContent().split(" ");

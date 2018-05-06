@@ -30,7 +30,7 @@ public class Database {
 
         getTrackedStream = connection.prepareStatement("SELECT * FROM streams WHERE id = ?");
         updateTrackedStream = connection.prepareStatement("UPDATE streams SET tracking_pool = ? WHERE id = ?");
-        insertTrackedStream = connection.prepareStatement("INSERT INTO streams (id, tracking_pool) VALUES (?, ?)");
+        insertTrackedStream = connection.prepareStatement("INSERT INTO streams(`id`,`tracking_pool`) VALUES (?,?)");
     }
 
     public boolean hasServer(long server) throws SQLException {
@@ -56,7 +56,7 @@ public class Database {
         getServer.setLong(1, server);
         ResultSet rs = getServer.executeQuery();
         if(rs.next()) {
-            return rs.getLong("channel");
+            return rs.getLong("webhook_id");
         }
         return -1;
     }
@@ -104,7 +104,7 @@ public class Database {
     public void createNewStreamTrack(long stream, long server) throws SQLException {
         insertTrackedStream.setLong(1, stream);
         insertTrackedStream.setString(2, Json.array().add(server).toString());
-        insertTrackedStream.execute();
+        System.out.println("Insert result: " + insertTrackedStream.execute());
     }
 
     public List<Long> getServersTrackingStream(long stream) throws SQLException {
